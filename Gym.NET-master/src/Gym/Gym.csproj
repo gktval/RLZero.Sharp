@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0;</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageId>Gym.NET</PackageId>
+    <Version>0.3.0</Version>
+    <Authors>Eli Belash</Authors>
+    <Company>SciSharp STACK</Company>
+    <Product>Gym.NET</Product>
+    <Description>openai/gym's popular toolkit for developing and comparing reinforcement learning algorithms port to C#. This package contains the base classes to mimic gym's OOP structure.</Description>
+    <Copyright>2023 © SciSharp STACK Team</Copyright>
+    <PackageLicenseUrl>https://github.com/SciSharp/Gym.NET/blob/master/README.md</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/SciSharp/Gym.NET</PackageProjectUrl>
+    <PackageIconUrl>https://avatars3.githubusercontent.com/u/44989469?s=200&amp;v=4</PackageIconUrl>
+    <RepositoryUrl>https://github.com/SciSharp/Gym.NET</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>gym, openai, reinforcement learning,learning,learning,NumPy, NumSharp, MachineLearning</PackageTags>
+	<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+	<AssemblyVersion>0.1.0.2</AssemblyVersion>
+	<FileVersion>0.1.0.2</FileVersion>
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  <ItemGroup>
+	  <PackageReference Include="NumSharp.Lite" Version="0.1.12" />
+  </ItemGroup>  
+</Project>

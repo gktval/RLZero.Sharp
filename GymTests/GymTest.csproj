@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net9.0-windows</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseWindowsForms>true</UseWindowsForms>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="DPW.cs" />
+	  <Compile Remove="Environment\CartPole.cs" />
+	  <Compile Remove="Environment\Lander.cs" />
+	  <Compile Remove="SPW.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="NumSharp.Lite" Version="0.1.12" />
+		<PackageReference Include="YamlDotNet" Version="16.3.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\DeepSharp.RL\DeepSharp.RL.csproj" />
+		<ProjectReference Include="..\EfficientZero\EfficientZero.csproj" />
+		<ProjectReference Include="..\Gym.NET-master\src\CarRacer\TopDownCarPhysics.csproj" />
+		<ProjectReference Include="..\Gym.NET-master\src\Gym\Gym.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="config-carracing.yaml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="config-cartpole.yaml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="config-lunarlander.yaml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
+</Project>

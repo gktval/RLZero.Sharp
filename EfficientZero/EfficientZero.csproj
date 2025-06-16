@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Batch\**" />
+    <EmbeddedResource Remove="Batch\**" />
+    <None Remove="Batch\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Buffer.cs" />
+    <Compile Remove="Memory.cs" />
+    <Compile Remove="StateModels\CartEfficientNet_Batch.cs" />
+    <Compile Remove="StateModels\CosineSimilarity.cs" />
+    <Compile Remove="Reanalyzer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DeepSharp.RL\DeepSharp.RL.csproj" />
+  </ItemGroup>
+
+</Project>
