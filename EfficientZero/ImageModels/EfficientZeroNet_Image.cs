@@ -4,9 +4,6 @@ using static TorchSharp.torch.optim;
 using TorchSharp;
 using F = TorchSharp.torch.nn.functional;
 using EfficientZero.Models;
-using GK.Data;
-using DeepSharp.RL.Agents;
-using System.Collections.Generic;
 
 namespace EfficientZero.ImageModels;
 
