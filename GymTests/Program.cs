@@ -1,11 +1,8 @@
-﻿// See https://aka.ms/new-console-template for more information
-using TorchSharp;
-using LunarLander;
-using System;
+﻿using TorchSharp;
 using YamlDotNet.Serialization.NamingConventions;
 using YamlDotNet.Serialization;
 using EfficientZero;
-using static TorchSharp.torch;
+using GymTest;
 
 Console.WriteLine("Initializing Car Racing");
 

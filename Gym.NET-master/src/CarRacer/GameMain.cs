@@ -211,7 +211,7 @@ public class GameMain : Game
 
     public Step Step(int act)
     {
-        TimeSpan elapsedTime = TimeSpan.FromSeconds(1 / 60f);
+        TimeSpan elapsedTime = TargetElapsedTime;
         GameTime gameTime = new GameTime(_totalGameTime, elapsedTime);
         _totalGameTime += elapsedTime;
 
@@ -260,7 +260,7 @@ public class GameMain : Game
         byte[] buffer = new byte[w * h * 3];
 
         //copy into a texture 
-        var crop = Crop(_mainTarget, new Rectangle(0, 0, desiredWidth, desiredHeight));
+        var crop = Resize(_mainTarget, new Rectangle(0, 0, desiredWidth, desiredHeight));
 
         backBuffer = new int[desiredWidth * desiredHeight];
         crop.GetData(backBuffer);
@@ -310,7 +310,7 @@ public class GameMain : Game
 
     }
 
-    public static Texture2D Crop(Texture2D image, Rectangle destRect)
+    public static Texture2D Resize(Texture2D image, Rectangle destRect)
     {
         Rectangle sourceRect = new Rectangle(0,0, image.Width, image.Height);
         var graphics = image.GraphicsDevice;
@@ -321,7 +321,7 @@ public class GameMain : Game
         graphics.Clear(new Color(0, 0, 0, 0));
 
         sb.Begin();
-        sb.Draw(image, destRect, sourceRect, Color.White);//,0,Vector2.Zero,9.7916f,SpriteEffects.None, 0 );
+        sb.Draw(image, destRect, sourceRect, Color.White);
         sb.End();
 
         graphics.SetRenderTarget(null); // set back to main window

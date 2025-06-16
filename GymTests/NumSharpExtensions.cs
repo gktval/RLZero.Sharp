@@ -1,11 +1,6 @@
 ﻿using NumSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace LunarLander;
+namespace GymTest;
 
 public static class NumSharpExtensions
 {

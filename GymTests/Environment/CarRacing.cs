@@ -7,7 +7,7 @@ using static TorchSharp.torch.distributions.constraints;
 using NumSharp;
 using Microsoft.Xna.Framework;
 
-namespace LunarLander;
+namespace GymTest;
 
 public class CarRacing : Environ<Space, Space>
 {
