@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\..\FieldMapper\GK.Data\GK.Data.csproj" />
     <ProjectReference Include="..\DeepSharp.Utility\DeepSharp.Utility.csproj" />
   </ItemGroup>
 

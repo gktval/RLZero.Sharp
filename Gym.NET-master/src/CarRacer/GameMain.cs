@@ -304,7 +304,7 @@ public class GameMain : Game
         //System.Runtime.InteropServices.Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
         //bmp.UnlockBits(data);
 
-        //bmp.Save("C:\\Users\\travis\\source\\repos\\TilingTorchApp\\Gym.NET-master\\src\\test.bmp");
+        //bmp.Save(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), car_race.bmp"));
 
         return b;
 
