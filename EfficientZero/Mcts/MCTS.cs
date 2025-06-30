@@ -347,10 +347,11 @@ public class MCTS
                     Tensor targetLatent = _net.Represent(listPreObs[i]);
                     if (_config.image)
                     {
-                        var proj_state = nextLatentState.reshape(-1, 2304);
-                        var target_proj_state = targetLatent.reshape(-1, 2304);
-                        //var proj_state = _net.Projection(nextLatentState, true);
-                        //var target_proj_state = _net.Projection(targetLatent, false);
+                        // just testing the difference using the projection network vs not using it
+                        //var proj_state = nextLatentState.reshape(-1, 2304);
+                        //var target_proj_state = targetLatent.reshape(-1, 2304);
+                        var proj_state = _net.Projection(nextLatentState, true);
+                        var target_proj_state = _net.Projection(targetLatent, false);
 
                         var latentLoss = _net.ConsistencyLoss(proj_state, target_proj_state);
 
