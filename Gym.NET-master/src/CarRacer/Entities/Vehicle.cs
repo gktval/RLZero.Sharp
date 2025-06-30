@@ -29,16 +29,44 @@ internal abstract class Vehicle
 
     protected Vector2 InputDirection = Vector2.Zero;
 
-    protected Vector2 Postion
-    {
-        get { return _physicsBody.Position; }
-    }
     #endregion
 
     #region Protected properties
 
     protected bool IsDriftingEnabled => _isDriftingEnabled;
 
+    protected Vector2 Postion
+    {
+        get { return _physicsBody.Position; }
+    }
+    protected float AngularVelocity
+    {
+        get { return _physicsBody.AngularVelocity; }
+    }
+
+    protected float AngularDamping
+    {
+        get { return _physicsBody.AngularDamping; }
+    }
+
+    protected float Rotation
+    {
+        get { return _physicsBody.Rotation; }
+    }
+
+    protected Vector2 LinearVelocity
+    {
+        get { return _physicsBody.LinearVelocity; }
+    }
+
+    protected float LinearDamping
+    {
+        get { return _physicsBody.LinearDamping; }
+    }
+    protected Vector2 Forward
+    {
+        get { return _forwardVector; }
+    }
     #endregion
 
     #region Vehicle physics

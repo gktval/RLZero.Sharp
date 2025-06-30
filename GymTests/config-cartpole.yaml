@@ -28,7 +28,6 @@ learning_rate: 0.02
 learning_rate_decay: 0.9
 weight_decay: 0.0001
 grad_clip: 1 # 0 interpreted as no clipping
-val_weight: 0.25
 batch_size: 32
 
 # Search params
@@ -67,6 +66,7 @@ tau: 0.3
 reward_steps: 1000
 total_training_steps: 100000
 
-# Consistency loss
+# loss params
 consistency_loss: True
 consistency_weight: 0.5
+value_weight: 0.25

@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TopDownCarPhysics", "..\Gym
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gym", "..\Gym.NET-master\src\Gym\Gym.csproj", "{5CD23928-4B5C-567F-1FB9-2BDB0D468A25}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Asteroids", "..\Gym.NET-master\src\Asteroids\Asteroids.csproj", "{63086824-D3E1-8F00-63DB-44411190C710}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{5CD23928-4B5C-567F-1FB9-2BDB0D468A25}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5CD23928-4B5C-567F-1FB9-2BDB0D468A25}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5CD23928-4B5C-567F-1FB9-2BDB0D468A25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63086824-D3E1-8F00-63DB-44411190C710}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63086824-D3E1-8F00-63DB-44411190C710}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63086824-D3E1-8F00-63DB-44411190C710}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63086824-D3E1-8F00-63DB-44411190C710}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

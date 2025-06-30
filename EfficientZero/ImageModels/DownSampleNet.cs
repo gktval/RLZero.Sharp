@@ -42,7 +42,7 @@ public class DownSampleNet : nn.Module<Tensor, Tensor>
     public override Tensor forward(Tensor x)
     {
         x = _conv1.forward(x);
-        //x = _bn1.forward(x);
+        x = _bn1.forward(x);
         x = F.relu(x);
         foreach (var block in _resBlocks1)
             x = block.forward(x);

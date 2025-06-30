@@ -21,14 +21,20 @@ public class CarRacing : Environ<Space, Space>
     private bool _isImage;
     public TopDownCarPhysics.GameMain GymEnv { get; set; }
     public bool IsDone { get; set; }
+    /// <summary>
+    /// The number of frames to skip.
+    /// a 1 means no skipping. 2 means every other
+    /// </summary>
+    public int FrameSkip = 1;
 
-    public CarRacing(DeviceType deviceType = DeviceType.CUDA, int maxEpisodes = 500, bool isImage = true)
+    public CarRacing(DeviceType deviceType = DeviceType.CUDA, int maxEpisodes = 500, bool isImage = true, int frameSkip = 1)
         : base("CarRacing", deviceType)
     {
         Initialise();
 
         _maxEpisodes = maxEpisodes;
         _isImage = isImage;
+        FrameSkip = frameSkip;
 
         _actSize = 5; // GymEnv.ActionSpace.Shape.Size;
         if (_isImage)
@@ -55,7 +61,7 @@ public class CarRacing : Environ<Space, Space>
         CallBack = OnStepCallback;
     }
 
-    public  void Initialise()
+    public void Initialise()
     {
         //GymEnv = new CarRacingEnv(WinFormEnvViewer.Factory, continuous: false);
         //if (_isImage)
@@ -109,25 +115,46 @@ public class CarRacing : Environ<Space, Space>
 
     public override Observation Update(Act act)
     {
-        int actVal = act.Value.item<int>();
-        var (observation, reward, _done, information) = GymEnv.Step(actVal);
-        _storedActions.Add(act);
-
         GymEnv.Render = Render;
-        GymEnv.RunOneFrame();
 
-        if (_isImage)
+        int actVal = act.Value.item<int>();
+        _reward = 0;
+
+        for (int skip = 0; skip < FrameSkip; skip++)
         {
-            var myState = observation.ToFloat3DArray();
-            Observation = new Observation(torch.from_array(myState).to(Device));
+
+            bool getObs = skip == FrameSkip - 1;
+            var (observation, reward, _done, information) = GymEnv.Step(actVal, getObs);
+            _storedActions.Add(act);
+
+            IsDone = _done;
+            _reward += reward;
+
+            if (IsDone && !getObs)
+            {
+                observation = GymEnv.GetScreenBuffer();
+                getObs = true;
+            }
+
+            if (getObs)
+            {
+                if (_isImage)
+                {
+                    var myState = observation.ToFloat3DArray();
+                    Observation = new Observation(torch.from_array(myState).to(Device));
+                }
+                else
+                {
+                    var myState = observation.ToFloatArray();
+                    Observation = new Observation(torch.from_array(myState).to(Device));
+                }
+            }
+            
+            if (IsDone)
+                break;
+
         }
-        else
-        {
-            var myState = observation.ToFloatArray();
-            Observation = new Observation(torch.from_array(myState).to(Device));
-        }
-        IsDone = _done;
-        _reward = reward;
+
         Reward = new Reward(Reward.Value + _reward);
 
         if (_stepCounter > _maxSteps)
@@ -144,23 +171,6 @@ public class CarRacing : Environ<Space, Space>
     public override bool IsComplete(int epoch)
     {
         return IsDone || epoch > _maxEpisodes;
-    }
-
-    public override Environ<Space, Space> Clone()
-    {
-        var env = new CarRacing(Device.type, _maxEpisodes);
-        env.ActionSpace = new Disperse(_actSize, torch.ScalarType.Int32, Device.type);
-        env.ObservationSpace = new Disperse(_obsSize, torch.ScalarType.Float32, Device.type);
-        env.Reward = new Reward(Reward.Value);
-        env.IsDone = IsDone;
-
-        for (int i = 0; i < _storedActions.Count; i++)
-        {
-            Act act = _storedActions[i];
-            env.Step(act, i);
-        }
-
-        return env;
     }
 
     internal List<Act> GetActions()

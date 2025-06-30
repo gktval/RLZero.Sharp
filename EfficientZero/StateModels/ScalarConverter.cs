@@ -53,7 +53,7 @@ public class ScalarConverter
     /// <summary>
     /// Canverts a tensor array to a scalar value
     /// </summary>
-    public static float InverseScalarTransform(Tensor logits, double epsilon = 0.001)
+    public static Tensor InverseScalarTransform(Tensor logits, double epsilon = 0.001)
     {
         //debugging
         var floatLogits = logits.data<float>().ToArray();
@@ -84,9 +84,9 @@ public class ScalarConverter
         output[isNan] = 0.0;
         output[torch.abs(output) < epsilon] = 0.0;
 
-        float scalar = output.squeeze(0).ToSingle();
+        float scalar = value.squeeze(0).ToSingle();
 
-        return scalar;
+        return output;
     }
 
     public static Tensor ScalarTransform(Tensor scalar, double epsilon = 0.001, int halfWidth = 10)
@@ -104,7 +104,7 @@ public class ScalarConverter
         var upperNdx = (torch.ceil(hX) + halfWidth).ToInt64();
         var lowerNdx = (torch.floor(hX) + halfWidth).ToInt64();
         var ratio = hX % 1;
-        var support = torch.zeros(2 * halfWidth + 1, ScalarType.Float64, device: scalar.device);
+        var support = torch.zeros(2 * halfWidth + 1, ScalarType.Float32, device: scalar.device);
 
         if (upperNdx == lowerNdx)
         {

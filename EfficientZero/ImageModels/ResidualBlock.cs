@@ -30,12 +30,11 @@ public class ResidualBlock : nn.Module<Tensor, Tensor>
         Tensor identity = x;
 
         var output = _conv1.forward(x);
-        //output = _bn1.forward(output);
-        var xS = output.flatten().data<float>().ToArray();
+        output = _bn1.forward(output);
         output = F.relu(output);
 
         output = _conv2.forward(output);
-        //output = _bn2.forward(output);
+        output = _bn2.forward(output);
 
         if (_downsample != null)
             identity = _downsample.forward(x);

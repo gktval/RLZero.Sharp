@@ -40,7 +40,8 @@ public class RepresentationNet : nn.Module<Tensor, Tensor>
         else
         {
             x = _conv.forward(x);
-            //x = _bn.forward(x);
+            x = _bn.forward(x);
+            var xs = x.data<float>().ToArray();
             x = F.relu(x);
         }
 

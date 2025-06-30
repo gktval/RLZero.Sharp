@@ -86,7 +86,7 @@ public class TreeNode
     /// Marker for the root node
     /// </summary>
     public bool IsRoot { get; set; }
-
+    public float[] Scores { get; internal set; }
 
     public TreeNode(
         int id,
@@ -322,38 +322,59 @@ public class TreeNode
         return score;
     }
 
+    /// <summary>
+    /// Returns the new policy based on the results of the tree search
+    /// </summary>
+    /// <returns></returns>
+    public float[] GetSearchPolicy()
+    {
+        return GetImprovedPolicy(GetTransformedCompletedQ());
+    }
 
-    public int PickAction(bool isRoot)
+    /// <summary>
+    /// Picks the action for the current node in the tree search
+    /// </summary>
+    /// <param name="isRoot"></param>
+    /// <returns></returns>
+    public int SelectChild(bool isRoot)
     {
         /// <summary>
         /// Gets the score each of the potential actions and picks the one with the highest.
         /// </summary>
         int totalVisitCount = 0;
+        int nullChildren = 0;
         foreach (var child in Children)
         {
             if (child != null)
-            {
                 totalVisitCount += child.NumVisits;
-            }
-        }
-
-        // EfficientV2 method 
-        // https://github.com/Shengjiewang-Jason/EfficientZeroV2/blob/main/ez/mcts/py_mcts.py#L609
-        float[] improvedPolicy = GetImprovedPolicy(GetTransformedCompletedQ());
-        float[] qScores = new float[Children.Length];
-        for (int act = 0; act < Children.Length; act++)
-        {
-            TreeNode child = Children[act];
-            if (child == null && isRoot)
-                qScores[act] = 1; // ensures that every child of the root node is picked once
-            else if(child == null)
-                qScores[act] = improvedPolicy[act];
             else
-                qScores[act] = improvedPolicy[act] - child.NumVisits / (1f + totalVisitCount);
+                nullChildren += 1;
         }
-        int action = Utils.ArgMax(qScores);
-        return action;
 
+        if (isRoot && nullChildren > 0)
+            return DoEqualVisit();
+
+        //if (isRoot)
+        //{
+        //    // EfficientV2 method
+        //    // https://github.com/Shengjiewang-Jason/EfficientZeroV2/blob/main/ez/mcts/py_mcts.py#L609
+        //    float[] improvedPolicy = GetImprovedPolicy(GetTransformedCompletedQ());
+        //    float[] qScores = new float[Children.Length];
+        //    for (int act = 0; act < Children.Length; act++)
+        //    {
+        //        TreeNode child = Children[act];
+        //        if (child == null && isRoot)
+        //            qScores[act] = 1; // ensures that every child of the root node is picked once
+        //        else if (child == null)
+        //            qScores[act] = improvedPolicy[act];
+        //        else
+        //            qScores[act] = improvedPolicy[act] - child.NumVisits / (1f + totalVisitCount);
+        //    }
+        //    int action = Utils.ArgMax(qScores);
+        //    return action;
+        //}
+        //else
+        //{
 
         double[] scores = new double[ActionSize];
         for (int i = 0; i < ActionSize; i++)
@@ -387,6 +408,17 @@ public class TreeNode
         }
 
         return actionsList[0];
+        //}
+    }
+
+    public int DoEqualVisit()
+    {
+        for (int i = 0; i < Children.Length; i++)
+        {
+            if (Children[i] == null)
+                return i;
+        }
+        throw new Exception("Not null children");
     }
 
     public Act PickBestAction(double temperature)
@@ -405,12 +437,16 @@ public class TreeNode
         }
 
         int action;
-        // zero temperature means always picking the the highest child values?? policy??
         if (temperature == 0)
         {
             float[] priors = new float[ActionSize];
             for (int i = 0; i < Children.Length; i++)
-                priors[i] = Children[i].AverageVal;
+            {
+                if (Children[i] == null)
+                    priors[i] = 0;
+                else
+                    priors[i] = Children[i].NumVisits;
+            }
             action = Utils.ArgMax(priors);
         }
         else
@@ -419,7 +455,7 @@ public class TreeNode
             double totalScore = 0;
             for (int i = 0; i < visitCounts.Length; i++)
             {
-                actionProbs[i] = Math.Pow(visitCounts[i], 1 / temperature);
+                actionProbs[i] = Math.Pow(visitCounts[i], 1 / temperature); // * Children[i].Value; //let's weight the actions by the predicted value
                 totalScore += actionProbs[i];
             }
             for (int i = 0; i < actionProbs.Length; i++)
@@ -430,17 +466,6 @@ public class TreeNode
             Random random = new Random();
             action = ChooseWithProbability(actionProbs, random);
         }
-
-        // Prints a lot of useful information for how the algorithm is making decisions
-        //if (Debug)
-        //{
-        //    double[] valPreds = new double[Children.Length];
-        //    for (int i = 0; i < Children.Length; i++)
-        //    {
-        //        valPreds[i] = Children[i] != null ? (double)Children[i].ValPred : 0;
-        //    }
-        //    Console.WriteLine($"{string.Join(", ", visitCounts)}, {ValPred}, {string.Join(", ", valPreds)}, {(valPreds[0] > valPreds[1] ? "L" : "R")}, {(action == 0 && valPreds[0] > valPreds[1] || action == 1 && valPreds[0] <= valPreds[1] ? "T" : "F")}");
-        //}
 
         return new Act(torch.tensor(action));
     }

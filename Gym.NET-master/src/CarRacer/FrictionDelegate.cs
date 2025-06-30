@@ -21,15 +21,17 @@ public class FrictionDetector
     {
         RoadTile tile = contact.FixtureA.Body.Tag as RoadTile;
         Vehicle car = contact.FixtureB.Body.Tag as Vehicle;
+        Player player = contact.FixtureB.Body.Tag as Player;
         if (tile == null)
         {
+            player = contact.FixtureB.Body.Tag as Player;
             tile = contact.FixtureB.Body.Tag as RoadTile;
             car = contact.FixtureA.Body.Tag as Vehicle;
         }
         if (tile == null || car == null)
         {
             //this is the edge of the world
-            if (tile == null && car != null)
+            if (tile == null && player != null)
             {
                 _env.Reward += -100;
                 _env.IsDone = true;
@@ -57,6 +59,7 @@ public class FrictionDetector
             car.Tiles.Remove(tile);
         }
     }
+
     public bool BeginContact(Contact contact)
     {
         DoContact(contact, true);

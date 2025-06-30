@@ -5,10 +5,12 @@ using Microsoft.Xna.Framework.Input;
 using nkast.Aether.Physics2D.Dynamics;
 using NumSharp;
 using System;
+using System.Linq;
 
 using TopDownCarPhysics.Entities;
 using TopDownCarPhysics.Physics;
 using TopDownCarPhysics.Utils;
+using static TopDownCarPhysics.RaceTrack;
 
 namespace TopDownCarPhysics;
 
@@ -25,14 +27,15 @@ public class GameMain : Game
     private Player _player;
     private SpriteBatch _spriteBatch;
     private RaceTrack _raceTrack;
+    private IndicatorArea _indicatorArea;
     private GameCamera _camera;
     private FrictionDetector _contactListener;
     private BackBuffer _mainTarget;
     public Environment _env;
-    private bool _canUpdate;
+    private bool _canStep;
+    private bool _isAIEnv;
 
     public bool Render { get; set; }
-
 
     public GameMain()
     {
@@ -41,27 +44,24 @@ public class GameMain : Game
         _graphics.PreferredBackBufferHeight = 640;
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
+        IsFixedTimeStep = true;
+        TargetElapsedTime = TimeSpan.FromMilliseconds(50);
 
-        _canUpdate = true;
-        Render = true;
+        _canStep = true;
     }
 
-    private GraphicsDevice _gDevice;
     public GameMain(bool aiEnvironment)
     {
         _graphics = new GraphicsDeviceManager(this);
         _graphics.PreferredBackBufferWidth = 640;
         _graphics.PreferredBackBufferHeight = 640;
-        PresentationParameters presParams = new PresentationParameters();
-        
-
         Content.RootDirectory = "Content";
         IsMouseVisible = false;
         IsFixedTimeStep = true;
-        TargetElapsedTime = TimeSpan.FromMilliseconds(170);
+        TargetElapsedTime = TimeSpan.FromMilliseconds(50);
 
-        _canUpdate = false;
-        Render = false;
+        _canStep = false;
+        _isAIEnv = aiEnvironment;
     }
 
     protected override void Initialize()
@@ -91,6 +91,9 @@ public class GameMain : Game
 
         _raceTrack = new RaceTrack(GraphicsDevice, _physicsWorld);
 
+        _indicatorArea = new IndicatorArea(this, _graphics);
+        _indicatorArea.LoadContent(Content);
+
         bool trackCreated = false;
         while (!trackCreated)
             trackCreated = _raceTrack.CreateTrack();
@@ -107,8 +110,11 @@ public class GameMain : Game
 
         // Create a basic player
         // 16 is tile size, 4 is scale, 2 is zoom
-        Vector2 initPosition = new Vector2(_raceTrack.RoadPoly[0].Verts[0].X + (float)Math.Cos(_raceTrack.Track[0].Beta) * 16 * 4 * 2, _raceTrack.RoadPoly[0].Verts[0].Y + (float)Math.Sin(_raceTrack.Track[0].Beta) * 16 * 4 * 2);
-        _player = new Player(initPosition, _raceTrack.Track[0].Beta + MathHelper.Pi / 2, _spriteBatch, _physicsWorld, Content);
+        int initTrack = Random.Shared.Next(_raceTrack.Track.Length);
+        RoadPolygon roadPoly = _raceTrack.RoadPoly.Where(f => f.TrackIndex == initTrack).First();
+        Vector2 initPosition = new Vector2(_raceTrack.RoadPoly[roadPoly.RoadIndex].Verts[0].X + (float)Math.Cos(_raceTrack.Track[initTrack].Beta) * 16 * 4 * 2, 
+                                           _raceTrack.RoadPoly[roadPoly.RoadIndex].Verts[0].Y + (float)Math.Sin(_raceTrack.Track[initTrack].Beta) * 16 * 4 * 2);
+        _player = new Player(initPosition, _raceTrack.Track[initTrack].Beta + MathHelper.Pi / 2, _spriteBatch, _physicsWorld, Content);
         //_player = new Player(new Vector2(2000,2000), _spriteBatch, _physicsWorld, Content);
 
         _player.LoadContent();
@@ -134,19 +140,22 @@ public class GameMain : Game
 
     protected override void Update(GameTime gameTime)
     {
-        _camera.Update(gameTime, _player.Position);
-
-        if (_canUpdate)
+        if (_canStep)
         {
-            // Get keyboard state
-            var keyboardState = Keyboard.GetState();
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Escape))
-                Exit();
+            _camera.Update(gameTime, _player.Rotation, _player.Position);
 
-            if (keyboardState.IsKeyDown(Keys.OemOpenBrackets))
-                _camera.ZoomIn(.01f);
-            else if (keyboardState.IsKeyDown(Keys.OemCloseBrackets))
-                _camera.ZoomOut(.01f);
+            if (!_isAIEnv)
+            {
+                // Get keyboard state
+                var keyboardState = Keyboard.GetState();
+                if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Escape))
+                    Exit();
+
+                if (keyboardState.IsKeyDown(Keys.OemOpenBrackets))
+                    _camera.ZoomIn(.01f);
+                else if (keyboardState.IsKeyDown(Keys.OemCloseBrackets))
+                    _camera.ZoomOut(.01f);
+            }
 
             // Update the player/opponent
             _player.Update(gameTime);
@@ -155,9 +164,11 @@ public class GameMain : Game
             // Update the physics 'world'
             _physicsWorld.Step((float)gameTime.ElapsedGameTime.TotalSeconds);
 
+            base.Update(gameTime);
         }
 
-        base.Update(gameTime);
+        if (_isAIEnv)
+            _canStep = false;
     }
 
 
@@ -168,6 +179,7 @@ public class GameMain : Game
         GraphicsDevice.Clear(Color.Black);
 
         Matrix viewMatrix = _camera.GetViewMatrix();
+
         Matrix mapProjection = Matrix.CreateOrthographicOffCenter(0, _graphics.PreferredBackBufferWidth / 1f,
               _graphics.PreferredBackBufferHeight / 1f, 0, 0, -1);
 
@@ -189,36 +201,44 @@ public class GameMain : Game
         //_opponent.Draw();
 
         _spriteBatch.End();
+
+
+        _spriteBatch.Begin(
+            sortMode: SpriteSortMode.Immediate,
+            blendState: null,
+            samplerState: SamplerState.PointClamp,
+            depthStencilState: null,
+            rasterizerState: null,
+            effect: null);
+        //Draw the indicators
+        _indicatorArea.RenderIndicators(_player, _spriteBatch, _env.Reward);
+
+        _spriteBatch.End();
         GraphicsDevice.SetRenderTarget(null);
 
-        //if (Render)
-        //{
+        //Draw the Renter Target
         _spriteBatch.Begin(SpriteSortMode.Immediate, null, SamplerState.PointClamp);
         _spriteBatch.Draw(_mainTarget, new Rectangle(0, 0, (int)(_graphics.PreferredBackBufferWidth),
                (int)(_graphics.PreferredBackBufferHeight)), Color.White);
-
-        //_env.Draw();
-
-        // Finish drawing
         _spriteBatch.End();
-        //}
 
         base.Draw(gameTime);
     }
 
+
+
     private TimeSpan _totalGameTime;
-
-
-    public Step Step(int act)
+    public Step Step(int act, bool getObservation)
     {
         TimeSpan elapsedTime = TargetElapsedTime;
         GameTime gameTime = new GameTime(_totalGameTime, elapsedTime);
         _totalGameTime += elapsedTime;
 
+        // Update the player's action
         _player.Step(act, gameTime);
 
-        // Update the physics 'world'
-        _physicsWorld.Step((float)gameTime.ElapsedGameTime.TotalSeconds);
+        _canStep = true;
+        this.RunOneFrame();
 
         bool done = _env.IsDone;
         _env.Reward -= 0.1f;
@@ -229,18 +249,13 @@ public class GameMain : Game
         {
             done = true;
         }
-        //Vector2 pos = Car.Hull.Position;
-        //if (Math.Abs(pos.X) > PLAYFIELD || Math.Abs(pos.Y) > PLAYFIELD)
-        //{
-        //    done = true;
-        //    step_reward = -100f;
-        //}
 
         Step step = new Step();
         step.Done = done;
         step.Reward = step_reward;
 
-        step.Observation = GetScreenBuffer();
+        if (getObservation)
+            step.Observation = GetScreenBuffer();
 
         return step;
     }
@@ -265,7 +280,7 @@ public class GameMain : Game
         backBuffer = new int[desiredWidth * desiredHeight];
         crop.GetData(backBuffer);
 
-        float[,,] b = new float[desiredWidth,desiredHeight, 3];
+        float[,,] b = new float[desiredWidth, desiredHeight, 3];
         int x = 0;
         int y = 0;
 
@@ -285,34 +300,40 @@ public class GameMain : Game
             x += 1;
         }
 
-        // For testing purpose
-        //buffer = new byte[desiredWidth * desiredHeight * 3];
-        //int bIndex = 0;
-        //for (int i = 0; i < backBuffer.Length; i++)
-        //{
-        //    var color = new Color((uint)backBuffer[i]);
-        //    buffer[bIndex] = color.B ;
-        //    buffer[bIndex+1] = color.G ;
-        //    buffer[bIndex+ 2] = color.R ;
-
-        //    bIndex += 3;
-        //}
-
-        //var bmp = new System.Drawing.Bitmap(desiredWidth, desiredHeight);
-        //var data = bmp.LockBits(new System.Drawing.Rectangle(0, 0, desiredWidth, desiredHeight), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-
-        //System.Runtime.InteropServices.Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
-        //bmp.UnlockBits(data);
-
-        //bmp.Save(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), car_race.bmp"));
+        // --------------- For testing purpose---------------
+        if (Render)
+            SaveBitmap(desiredWidth, desiredHeight, backBuffer);
 
         return b;
 
     }
 
+    private void SaveBitmap(int w, int h, int[] backBuffer)
+    {
+        var buffer = new byte[w * h * 3];
+        int bIndex = 0;
+        for (int i = 0; i < backBuffer.Length; i++)
+        {
+            var color = new Color((uint)backBuffer[i]);
+            buffer[bIndex] = color.B;
+            buffer[bIndex + 1] = color.G;
+            buffer[bIndex + 2] = color.R;
+
+            bIndex += 3;
+        }
+
+        var bmp = new System.Drawing.Bitmap(w, h);
+        var data = bmp.LockBits(new System.Drawing.Rectangle(0, 0, w, h), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+
+        System.Runtime.InteropServices.Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
+        bmp.UnlockBits(data);
+
+        bmp.Save(System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop), "car_race.bmp"));
+    }
+
     public static Texture2D Resize(Texture2D image, Rectangle destRect)
     {
-        Rectangle sourceRect = new Rectangle(0,0, image.Width, image.Height);
+        Rectangle sourceRect = new Rectangle(0, 0, image.Width, image.Height);
         var graphics = image.GraphicsDevice;
         var ret = new RenderTarget2D(graphics, destRect.Width, destRect.Height);
         var sb = new SpriteBatch(graphics);
@@ -352,8 +373,14 @@ public class GameMain : Game
         _env.Track = _raceTrack.Track;
         _env.RoadColor = new Color(102, 102, 102);// _raceTrack.RoadColor;
 
-        Vector2 initPosition = new Vector2(_raceTrack.RoadPoly[0].Verts[0].X + (float)Math.Cos(_raceTrack.Track[0].Beta) * 16 * 4 * 2, _raceTrack.RoadPoly[0].Verts[0].Y + (float)Math.Sin(_raceTrack.Track[0].Beta) * 16 * 4 * 2);
-        _player.Reset(initPosition, _raceTrack.Track[0].Beta + MathHelper.Pi / 2);
+        int initTrack = Random.Shared.Next(_raceTrack.Track.Length);
+        RoadPolygon roadPoly = _raceTrack.RoadPoly.Where(f => f.TrackIndex == initTrack).First();
+        Vector2 initPosition = new Vector2(_raceTrack.RoadPoly[roadPoly.RoadIndex].Verts[0].X + (float)Math.Cos(_raceTrack.Track[initTrack].Beta) * 16 * 4 * 2,
+                                           _raceTrack.RoadPoly[roadPoly.RoadIndex].Verts[0].Y + (float)Math.Sin(_raceTrack.Track[initTrack].Beta) * 16 * 4 * 2);
+        _player.Reset(initPosition, _raceTrack.Track[initTrack].Beta + MathHelper.Pi / 2);
+
+        _canStep = true;
+        this.RunOneFrame();
 
         Step step = new Step();
         step.Observation = GetScreenBuffer();

@@ -16,6 +16,18 @@ internal class Player : Vehicle
 
     public Vector2 Position => base.Postion;
 
+    public float AngularVelocity => base.AngularVelocity;
+
+    public float AngularDamping => base.AngularDamping;
+
+    public float Rotation => base.Rotation;
+
+    public Vector2 LinearVelocity => base.LinearVelocity;
+
+    public float LinearDamping => base.LinearDamping;
+
+    public Vector2 Forward => base.Forward;
+
     public Player(Vector2 initialPosition, float initRotation, SpriteBatch spriteBatch, PhysicsWorld physicsWorld, ContentManager contentManager)
         : base(spriteBatch, physicsWorld, contentManager)
     {
@@ -30,7 +42,7 @@ internal class Player : Vehicle
         _initialPosition = initialPosition;
         _initialRotation = initRotation;
 
-        InitialisePhysics(_initialPosition, _initialRotation, mass: 1f, turnSpeed: 15f, driftFactor: 0.92f, enableDrifting: true);
+        InitialisePhysics(_initialPosition, _initialRotation, mass: 1f, turnSpeed: 25f, driftFactor: 0.92f, enableDrifting: true);
     }
 
     public void LoadContent()
@@ -48,43 +60,46 @@ internal class Player : Vehicle
         // some different values and see what happens ;-)
         //
         // Drift factor: closer to '1' means more 'slippy', start at '0.9' for decent grip
-        InitialisePhysics(_initialPosition, _initialRotation, mass: 1f, turnSpeed: 15f, driftFactor: 0.92f, enableDrifting: true);
+        InitialisePhysics(_initialPosition, _initialRotation, mass: 1f, turnSpeed: 20f, driftFactor: 0.92f, enableDrifting: true);
     }
 
     public override void Update(GameTime gameTime)
     {
-        // Get keyboard state
-        var keyboardState = Keyboard.GetState();
+        if (!_isStep)
+        {
+            // Get keyboard state
+            var keyboardState = Keyboard.GetState();
 
-        // Remember to reset the input direction on each update!
-        InputDirection = Vector2.Zero;
 
-        // Acceleration and braking
-        if (keyboardState.IsKeyDown(Keys.Up)) InputDirection.Y = 1;
-        else if (keyboardState.IsKeyDown(Keys.Down)) InputDirection.Y = -1;
+            // Remember to reset the input direction on each update!
+            InputDirection = Vector2.Zero;
 
-        // Turning
-        if (keyboardState.IsKeyDown(Keys.Left)) InputDirection.X = -1;
-        else if (keyboardState.IsKeyDown(Keys.Right)) InputDirection.X = 1;
+            // Acceleration and braking
+            if (keyboardState.IsKeyDown(Keys.Up)) InputDirection.Y = 1;
+            else if (keyboardState.IsKeyDown(Keys.Down)) InputDirection.Y = -1;
 
-        // Press space to skid/drift ;-)
-        if (keyboardState.IsKeyDown(Keys.Space)) Skid();
+            // Turning
+            if (keyboardState.IsKeyDown(Keys.Left)) InputDirection.X = -1;
+            else if (keyboardState.IsKeyDown(Keys.Right)) InputDirection.X = 1;
 
-        // Enable/disable drifting/skidding (when disabled it will turn like its on rails)
-        if (keyboardState.IsKeyDown(Keys.D)) DisableDrifting();
-        if (keyboardState.IsKeyDown(Keys.E)) EnableDrifting();
+            // Press space to skid/drift ;-)
+            if (keyboardState.IsKeyDown(Keys.Space)) Skid();
 
-        // Change the traction/skid control level
-        if (keyboardState.IsKeyDown(Keys.I)) ImproveTraction();
-        if (keyboardState.IsKeyDown(Keys.R)) ReduceTraction();
+            // Enable/disable drifting/skidding (when disabled it will turn like its on rails)
+            if (keyboardState.IsKeyDown(Keys.D)) DisableDrifting();
+            if (keyboardState.IsKeyDown(Keys.E)) EnableDrifting();
 
+            // Change the traction/skid control level
+            if (keyboardState.IsKeyDown(Keys.I)) ImproveTraction();
+            if (keyboardState.IsKeyDown(Keys.R)) ReduceTraction();
+        }
         // Process/update this vehicles physics
         base.Update(gameTime);
     }
 
+    private bool _isStep = false;
     public void Step(int action, GameTime gameTime)
     {
-
         // Remember to reset the input direction on each update!
         InputDirection = Vector2.Zero;
 
@@ -94,21 +109,36 @@ internal class Player : Vehicle
                 //Do Nothing
                 break;
             case 1:
-                InputDirection.Y = 1;//forward
+                InputDirection.Y = 1; //forward
                 break;
             case 2:
-                InputDirection.Y = -1;//back
+                InputDirection.Y = -1; //reverse
                 break;
             case 3:
                 InputDirection.X = 1; //right
                 break;
             case 4:
-                InputDirection.X = -1;//left
+                InputDirection.X = -1; //left
+                break;
+            case 5:
+                InputDirection.Y = 1; //forward-right
+                InputDirection.X = 1;
+                break;
+            case 6:
+                InputDirection.Y = 1; //forward-left
+                InputDirection.X = -1;
+                break;
+            case 7:
+                InputDirection.Y = -1; //reverse-right
+                InputDirection.X = 1;
+                break;
+            case 8:
+                InputDirection.Y = -1; //reverse-left
+                InputDirection.X = -1;
                 break;
         }
 
-        // Process/update this vehicles physics
-        base.Update(gameTime);
+        _isStep = true;
     }
 
     public override void Draw()

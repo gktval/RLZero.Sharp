@@ -7,9 +7,10 @@ namespace EfficientZero.ImageModels;
 
 public class ProjectionHeadNet : nn.Module<Tensor, Tensor>
 {
-    private Sequential _layer;
+    //private Sequential _layer;
     private Linear _ln1;
-    private Linear _ln2; 
+    private Linear _ln2;
+    private BatchNorm1d _bn1;
 
     public ProjectionHeadNet(int inputDim, int hiddenDim, int outDim, DeviceType deviceType = DeviceType.CUDA)
         : base("Projection")
@@ -17,15 +18,16 @@ public class ProjectionHeadNet : nn.Module<Tensor, Tensor>
         Device device = new torch.Device(deviceType);
 
         _ln1 = nn.Linear(inputDim, hiddenDim, device: device);
+        _bn1 = nn.BatchNorm1d(hiddenDim, device: device);
         _ln2 = nn.Linear(hiddenDim, outDim, device: device);
-
-        _layer = nn.Sequential(new List<nn.Module<Tensor, Tensor>>()
-        {
-            nn.Linear(inputDim, hiddenDim, device:device),
-            //nn.BatchNorm1d(hiddenDim, device:device),
-            nn.ReLU(),
-            nn.Linear(hiddenDim, outDim, device:device),
-        });
+        
+        //_layer = nn.Sequential(new List<nn.Module<Tensor, Tensor>>()
+        //{
+        //    nn.Linear(inputDim, hiddenDim, device:device),
+        //    nn.BatchNorm1d(hiddenDim, device:device),
+        //    nn.ReLU(),
+        //    nn.Linear(hiddenDim, outDim, device:device),
+        //});
 
         RegisterComponents();
     }
@@ -33,6 +35,7 @@ public class ProjectionHeadNet : nn.Module<Tensor, Tensor>
     public override Tensor forward(Tensor input)
     {
         var x = _ln1.forward(input);
+        x = _bn1.forward(x);
         x = F.relu(x);
         x = _ln2.forward(x);
         return x;

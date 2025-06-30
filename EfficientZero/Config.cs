@@ -19,11 +19,10 @@ public class Config
     public bool render { get; set; }
     public bool print_simple { get; set; }
     public int max_games { get; set; } // Total number of games before training is ended
-    public int max_total_frames { get; set; }
     public int max_frames { get; set; }// Maximum frames for a single game before it is cut short
     public int[] obs_shape { get; set; } 
     public bool image { get; set; }
-
+    public int frame_skip { get; set; }
 
     // Model params
     public int latent_size { get; set; }
@@ -49,7 +48,7 @@ public class Config
     public float learning_rate_decay { get; set; }
     public float weight_decay { get; set; }
     public float grad_clip { get; set; }
-    public float val_weight { get; set; }
+    public float value_weight { get; set; }
     public int batch_size { get; set; }
 
 

@@ -97,6 +97,7 @@ public class EfficientZeroNet_Image : nn.Module, IEfficientZeroNet
         RegisterComponents();
 
         InitParameters();
+
     }
 
     public void Eval()
@@ -121,13 +122,13 @@ public class EfficientZeroNet_Image : nn.Module, IEfficientZeroNet
 
     public Tensor ConsistencyLoss(Tensor x1, Tensor x2)
     {
-        x1 = F.normalize(x1, p: 2.0, dim: 0, eps: 1e-5);
-        x2 = F.normalize(x2, p: 2.0, dim: 0, eps: 1e-5);
+        x1 = F.normalize(x1, p: 2.0, dim: -1, eps: 1e-5);
+        x2 = F.normalize(x2, p: 2.0, dim: -1, eps: 1e-5);
 
-        var x1d = x1.data<float>().ToArray();
-        var x2d = x2.data<float>().ToArray();
+        //var x1d = x1.data<float>().ToArray();
+        //var x2d = x2.data<float>().ToArray();
 
-        return -(x1 * x2).sum(dim: 0);
+        return -(x1 * x2).sum(dim: 1);
     }
 
     public void InitParameters()
@@ -153,7 +154,7 @@ public class EfficientZeroNet_Image : nn.Module, IEfficientZeroNet
         this.Optimizer = new SGD(parameters(), learningRate, weight_decay: _config.weight_decay, momentum: _config.momentum);
     }
 
-    public (Tensor state, float value, Tensor policy) InitialInference(Tensor observation)
+    public (Tensor state, Tensor value, Tensor policy) InitialInference(Tensor observation)
     {
         var latentState = Represent(observation);
         (Tensor value, Tensor policy) = PolicyPredict(latentState);
@@ -161,13 +162,13 @@ public class EfficientZeroNet_Image : nn.Module, IEfficientZeroNet
         //if (training)
         //    return (latentState, value, policy);
 
-        var scalarValue = ScalarConverter.InverseScalarTransform(value);
+        //var scalarValue = ScalarConverter.InverseScalarTransform(value);
         //scalarValue = (float)Math.Clamp(scalarValue, 0, .00005);
 
         //var mu = policy[.., ..288].detach().cpu().flatten().data<float>();
         //var signma = policy[.., 288].detach().cpu().flatten().data<float>();
 
-        return (latentState, scalarValue, policy);
+        return (latentState, value, policy);
     }
 
     public (Tensor nextLatentState, Tensor valuePrefix, Tensor value, Tensor policy, (Tensor,Tensor) rewardHidden)

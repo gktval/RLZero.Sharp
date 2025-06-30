@@ -2,6 +2,7 @@
 using TorchSharp.Modules;
 using TorchSharp;
 using F = TorchSharp.torch.nn.functional;
+using System;
 
 namespace EfficientZero.ImageModels;
 
@@ -34,14 +35,22 @@ public class SupportLSTMNet : nn.Module
     public (Tensor reward, (Tensor hiddenC, Tensor hiddenH)) Forward(Tensor x, (Tensor, Tensor) hidden)
     {
         x = _conv.forward(x);
-        //x = _bn.forward(x);
+        x = _bn.forward(x);
         x = F.relu(x);
         x = x.reshape(-1, _flattenSize);
 
         x = x.unsqueeze(0);
         var (lstmX, hiddenOut, other) = _lstm.forward(x, hidden);
+        //var xs = x.data<float>().ToArray();
+
         x = lstmX.squeeze(0);
-        //x = _bnRewardSum.forward(x);
+        //x = F.normalize(x, p: 2, dim: 1);
+        x = _bnRewardSum.forward(x);
+        //System.Diagnostics.Debug.WriteLine("bn", torch.isfinite(x).all());
+
+        //var xs = x.data<float>().ToArray();
+        //if (xs.Any(f => float.IsNaN(f)))
+        //    System.Diagnostics.Debug.WriteLine("Has NaN!");
         x = F.relu(x);
         x = _fc.forward(x);
 

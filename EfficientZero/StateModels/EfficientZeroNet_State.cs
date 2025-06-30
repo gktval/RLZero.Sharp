@@ -108,7 +108,7 @@ public class EfficientZeroNet_State : nn.Module, IEfficientZeroNet
         this.Optimizer = new SGD(parameters(), learningRate, weight_decay: _config.weight_decay, momentum: _config.momentum);
     }
 
-    public (Tensor state, float value, Tensor policy) InitialInference(Tensor observation)
+    public (Tensor state, Tensor value, Tensor policy) InitialInference(Tensor observation)
     {
         var latentState = Represent(observation);
         (Tensor value, Tensor policy) = PolicyPredict(latentState);
@@ -116,10 +116,10 @@ public class EfficientZeroNet_State : nn.Module, IEfficientZeroNet
         //if (training)
         //    return (latentState, value, policy);
 
-        var scalarValue = ScalarConverter.InverseScalarTransform(value);
+        //var scalarValue = ScalarConverter.InverseScalarTransform(value);
         //scalarValue = (float)Math.Clamp(scalarValue, 0, .00005);
 
-        return (latentState, scalarValue, policy);
+        return (latentState, value, policy);
     }
 
     public (Tensor nextLatentState, Tensor valuePrefix, Tensor value, Tensor policy, (Tensor,Tensor) rewardHidden) 

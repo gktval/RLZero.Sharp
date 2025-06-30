@@ -17,7 +17,7 @@ public interface IEfficientZeroNet
     public void Save(string location);
     public void Load(string location, bool strict = true);
     public void InitOptimizer(double learningRate);
-    public (Tensor state, float value, Tensor policy) InitialInference(Tensor observation);
+    public (Tensor state, Tensor value, Tensor policy) InitialInference(Tensor observation);
 
 
     public (Tensor nextLatentState, Tensor valuePrefix, Tensor value, Tensor policy, (Tensor,Tensor) rewardHidden)

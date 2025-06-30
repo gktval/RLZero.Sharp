@@ -25,7 +25,10 @@ public class GameRecord
         Values = new List<float>();
         // Values predicted by the initial observation
         PredValues = new List<float>();
+        // Priority is the loss of pred values to average values (as calculated in the tree search)
         Priorities = new List<float>();
+        // This is the final score of the improved policy from the tree search
+        SearchPolicy = new List<float[]>();
     }
 
     public Config Config { get; }
@@ -44,6 +47,7 @@ public class GameRecord
     /// </summary>
     public List<float> PredValues { get; }
     public List<float> Priorities { get; }
+    public List<float[]> SearchPolicy { get; set; }
 
     public void AddStep(Step step, TreeNode root)
     {
@@ -73,6 +77,7 @@ public class GameRecord
 
         Values.Add(root.AverageVal);
         PredValues.Add(root.Value);
+        SearchPolicy.Add(root.Scores);
     }
 
     public void AddPriorities()
@@ -81,21 +86,53 @@ public class GameRecord
         if (Priorities.Count != 0)
             throw new System.Exception("Priorities should be empty initially.");
 
+        //DoDerivativePriority();
+
         List<float> realValue = new List<float>();
-        int rewardDepth = 25;
         for (int index = 0; index < Values.Count; index++)
         {
-            int bootstrapIndex = index + rewardDepth;
-            int lastBootstrapIndex = Math.Min(bootstrapIndex, Rewards.Count - 1);
-
-            float targetSum = Values[index] * (float)Math.Pow(Discount, lastBootstrapIndex);
-            for (int j = 0; j < rewardDepth; j++)
-                if (index + j < Rewards.Count - 1) // -1 because it is episodic
-                    targetSum += Rewards[index + j] * (float)Math.Pow(Discount, j);
-
-            //float priority = (Values[index] - targetSum) * (Values[index] - targetSum);
-            float priority = (PredValues[index] - Values[index]) * (PredValues[index] - Values[index]);
+            float priority = (float)Math.Sqrt((PredValues[index] - Values[index]) * (PredValues[index] - Values[index]));
             priority = (float)Math.Max(priority, 1);
+            Priorities.Add(priority);
+        }
+    }
+
+    private void DoDerivativePriority()
+    {
+        // This is my own prioritization method.
+        // It prioritizes the derivative of the running values
+        // In other words, we put higher priority to areas in the episode where
+        // the predicted future rewards decrease
+        // Perhaps the TD error should be weighted by the new priorization method...?
+        int spacing = Config.rollout_depth;
+        for (int index = 0; index < Values.Count; index++)
+        {
+            List<float> aVals = new List<float>();
+            List<float> bVals = new List<float>();
+            for (int i = -2; i < 3; i++)
+            {
+                aVals.Add(Values[Math.Clamp(index + i, 0, Values.Count - 1)]);
+                bVals.Add(Values[Math.Min(index + i + spacing, Values.Count - 1)]);
+            }
+
+            float a = aVals.Average();
+            float b = bVals.Average();
+            float priorityVals = ((a - b) / spacing);
+
+            List<float> cVals = new List<float>();
+            List<float> dVals = new List<float>();
+            for (int i = -2; i < 3; i++)
+            {
+                cVals.Add(PredValues[Math.Clamp(index + i, 0, PredValues.Count - 1)]);
+                dVals.Add(PredValues[Math.Min(index + i + spacing, PredValues.Count - 1)]);
+            }
+
+            float c = cVals.Average();
+            float d = dVals.Average();
+            float priorityPreds = ((c - d) / spacing);
+
+            float priority = (priorityVals - priorityPreds) * (priorityVals - priorityPreds);
+            priority = (float)Math.Max(priority, 0.1);
             Priorities.Add(priority);
         }
     }
@@ -151,12 +188,14 @@ public class GameRecord
                 policy.Add(search / (float)totalSearches);
             }
             targetPolicies.Add(policy);
+
+            // testing setting target values to the search scores instead of the number of times the node was searched
+            //targetPolicies.Add(SearchPolicy[index].ToList());
         }
 
         // include all observations for consistency loss
         List<Observation> preObs = PreObs.GetRange(index, rolloutDepth);
         List<Act> actions = Actions.GetRange(index, rolloutDepth);
-        //List<Act> hiddenRewards = .GetRange(index, rolloutDepth);
 
         return new BufferData(preObs, actions, targetValues, targetValuePrefixes, targetPolicies);
     }
@@ -166,11 +205,12 @@ public class GameRecord
         int numSim = Config.n_simulations;
         for (int i = 0; i < PreObs.Count - 1; i++)
         {
-            TreeNode node = mcts.Search(numSim, PreObs[i]);
+            TreeNode node = mcts.Search(numSim, PreObs[i], true);
 
             // In the paper, it says they recompute trajectories using the "mean" value at the root node.
             Values[i] = node.AverageVal;
             PredValues[i] = node.Value;
+            SearchPolicy[i] = node.Scores;
 
             if (node.Children != null)
             {

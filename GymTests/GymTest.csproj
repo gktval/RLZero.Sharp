@@ -23,11 +23,15 @@
 	<ItemGroup>
 		<ProjectReference Include="..\DeepSharp.RL\DeepSharp.RL.csproj" />
 		<ProjectReference Include="..\EfficientZero\EfficientZero.csproj" />
+		<ProjectReference Include="..\Gym.NET-master\src\Asteroids\Asteroids.csproj" />
 		<ProjectReference Include="..\Gym.NET-master\src\CarRacer\TopDownCarPhysics.csproj" />
 		<ProjectReference Include="..\Gym.NET-master\src\Gym\Gym.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Update="config-asteroids.yaml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
 	  <None Update="config-carracing.yaml">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>

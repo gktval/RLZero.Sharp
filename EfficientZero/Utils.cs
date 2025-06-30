@@ -114,9 +114,14 @@ public static class Utils
     public static float[] AddDirichlet(float[] prior, double dirichletAlpha, double exploreFraction)
     {
         float[] newPrior = new float[prior.Length];
-        var noise = new MathNet.Numerics.Distributions.Dirichlet(dirichletAlpha, 1);
+        //var noises = new MathNet.Numerics.Distributions.Dirichlet(dirichletAlpha, 1);
+        double[] alpha = prior.Select(f => prior.Length* dirichletAlpha).ToArray();
+        var noise = new MathNet.Numerics.Distributions.Dirichlet(alpha, _random);
+        var samples = noise.Sample();
         for (int i = 0; i < prior.Length; i++)
-            newPrior[i] = (float)((1 - exploreFraction) * prior[i] + exploreFraction * noise.RandomSource.NextDouble());
+        {
+             newPrior[i] = (float)((1 - exploreFraction) * prior[i] + exploreFraction * samples[i]);
+        }
         return newPrior;
     }
 }

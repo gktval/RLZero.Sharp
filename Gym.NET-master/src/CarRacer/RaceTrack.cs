@@ -45,6 +45,8 @@ public class RaceTrack
     {
         internal Vertices Verts;
         internal Color Color;
+        internal int TrackIndex;
+        internal int RoadIndex;
     }
 
 
@@ -370,10 +372,11 @@ PrimitiveType.TriangleList, vert, 0, vert.Length, ind, 0, ind.Length / 3);
         }
 
         int offset = (int)(TRACK_RAD * SCALE);
-        Vector2 add = new Vector2(TRACK_RAD, TRACK_RAD);
+        Vector2 add = new Vector2(TRACK_RAD + TRACK_RAD / 2, TRACK_RAD + TRACK_RAD / 2);
 
         // Create tiles
         int prev_track_index = track.Length - 1;
+        int roadIndex = 0;
         for (i = 0; i < track.Length; i++)
         {
             // position 1
@@ -404,7 +407,7 @@ PrimitiveType.TriangleList, vert, 0, vert.Length, ind, 0, ind.Length / 3);
             RoadTile tile = new RoadTile();
             bx.Tag = tile;
             tile.Index = i;
-            int c = 25 * (tile.Index % 3);
+            int c = 10 * (tile.Index % 3);
             tile.Color = new Color(102 + c, 102 + c, 102 + c);
             tile.RoadVisited = false;
             tile.Friction = 1f;
@@ -413,6 +416,9 @@ PrimitiveType.TriangleList, vert, 0, vert.Length, ind, 0, ind.Length / 3);
             RoadPolygon poly = new RoadPolygon();
             poly.Verts = vx;
             poly.Color = tile.Color;
+            poly.TrackIndex = tile.Index;
+            poly.RoadIndex = roadIndex;
+            roadIndex++;
             RoadPoly.Add(poly);
             Road.Add(bx);
             if (border[tile.Index])
@@ -440,16 +446,14 @@ PrimitiveType.TriangleList, vert, 0, vert.Length, ind, 0, ind.Length / 3);
                 poly = new RoadPolygon();
                 poly.Verts = vx;
                 poly.Color = (tile.Index % 2 == 0) ? new Color(255, 255, 255) : new Color(255, 0, 0);
+                poly.TrackIndex = -1;
+                poly.RoadIndex = roadIndex;
+                roadIndex++;
                 RoadPoly.Add(poly);
             }
 
             prev_track_index = (prev_track_index + 1) % track.Length;
         }
-
-
-
-        if (RoadPoly.Count == 0)
-            Console.Beep();
 
         foreach (RoadPolygon poly in RoadPoly)
         {

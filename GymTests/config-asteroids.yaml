@@ -1,0 +1,86 @@
+﻿# Basic params
+seed: 0
+
+# Setup params  
+log_dir: "runs"
+log_name: "None"
+load_buffer: False
+debug: False
+train_speed_profiling: False
+get_batch_profiling: False
+render: False
+print_simple: True
+max_games: 125 # Total number of games before training is ended
+max_total_frames: 10000
+max_frames: 800 # Maximum frames for a single game before it is cut short
+obs_shape: [3, 96, 96]
+image: true
+
+# Model params
+latent_size: 32
+fc_units: 32
+support_width: 25
+n_simulations: 41
+downsample: True
+init_zero: True    # prev True
+num_blocks: 1   # prev 1
+num_channels: 64
+reduced_channels: 16
+action_embedding: True
+action_embedding_dim: 16
+
+act_units: 32
+dyn_units: 128
+
+
+projection_layers: [1024, 1024]     # hidden dim, output dim
+prjection_head_layers: [256, 1024]  # hidden dim, output dim
+
+
+# Training params
+learning_rate: 0.005
+learning_rate_decay: 0.9
+weight_decay: 0.0001
+grad_clip: 1 # 0 interpreted as no clipping
+batch_size: 32
+
+# Search params
+root_dirichlet_alpha: 0.25
+explore_frac: 0.25
+discount: 0.997
+n_batches: 100
+rollout_depth: 5
+reward_depth: 25
+buffer_size: 200
+
+# Priority replay params
+priority_replay: True
+priority_alpha: 1.0 # prev 0.6
+priority_beta: 1.0 # prev 0.4
+
+# Temperature schedule
+temp1: 1000 # Steps after which temperature is dropped to 0.5
+temp2: 2000 # Steps after which temperature is dropped to 0.25
+temp3: 3000 # Steps after which temperature is dropped to 0
+
+# Reanalyse
+reanalyze: True
+reanalyse_n: 1
+prior_weight: 1
+momentum: 0.9
+
+## EfficientZero Additions
+# Value prefix
+value_prefix: True
+lstm_hidden_size: 255
+
+# Off policy correction
+off_policy_correction: True
+tau: 0.3
+reward_steps: 1000
+total_training_steps: 100000
+
+# loss params
+consistency_loss: True
+consistency_weight: 0.5
+value_weight: 0.25

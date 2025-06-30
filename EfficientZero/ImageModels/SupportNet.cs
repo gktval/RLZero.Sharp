@@ -32,7 +32,8 @@ public class SupportNet : nn.Module<Tensor, Tensor>
     public override Tensor forward(Tensor x)
     {
         x = _conv.forward(x);
-        //x = _bn.forward(x);
+        x = _bn.forward(x);
+        //var xs = x.data<float>().ToArray();
         x = F.relu(x);
         x = x.reshape(-1, _flattenSize);
         x = _fc.forward(x);

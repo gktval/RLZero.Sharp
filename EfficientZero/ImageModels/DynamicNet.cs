@@ -17,7 +17,7 @@ public class DynamicNet : nn.Module
     private Conv2d _conv1x1;
     private LayerNorm _ln;
     private Conv2d _conv1;
-    private BatchNorm _bn;
+    private BatchNorm2d _bn;
     private ModuleList<ResidualBlock> _resBlocks;
 
     public DynamicNet(int numBlocks, int numChannels, int actionSpaceSize, bool isContinuous = false, bool actionEmbedding = false, int actionEmbeddingDim = 32, DeviceType deviceType = DeviceType.CUDA)
@@ -71,17 +71,20 @@ public class DynamicNet : nn.Module
         {
             actionPlace = _conv1x1.forward(actionPlace);
             actionPlace = _ln.forward(actionPlace);
+            
             actionPlace = nn.functional.relu(actionPlace);
         }
 
         var x = torch.concat(new[] { latent, actionPlace }, 1);
         x = _conv1.forward(x);
-        //x = _bn.forward(x);
+        x = _bn.forward(x);
+
+        x += latent;
+        x = F.relu(x);
+        
         foreach (var block in _resBlocks)
             x = block.forward(x);
 
-        //var newLatent = output[.., 0..latentSize];
-        //var rewardLogits = output[.., latentSize..];
         return x;
     }
 

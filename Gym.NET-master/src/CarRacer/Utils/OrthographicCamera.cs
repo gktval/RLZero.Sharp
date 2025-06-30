@@ -26,7 +26,7 @@ public class OrthographicCamera : Camera
 
         Rotation = 0;
         Zoom = 1;
-        Origin = new Vector2(viewportAdapter.VirtualWidth / 2f, viewportAdapter.VirtualHeight / 2f);
+        Origin = Vector2.Zero; //new Vector2(viewportAdapter.VirtualWidth/2, viewportAdapter.VirtualHeight/2);
         Position = Vector2.Zero;
     }
 
@@ -75,7 +75,7 @@ public class OrthographicCamera : Camera
         }
     }
 
-    public  Rectangle BoundingRectangle
+    public Rectangle BoundingRectangle
     {
         get
         {
@@ -129,11 +129,15 @@ public class OrthographicCamera : Camera
 
     public void LookAt(Vector2 position)
     {
-        float scale = 2f * ViewportScale;
-        float x = _viewportAdapter.VirtualWidth / scale/Zoom;
-        float y = _viewportAdapter.VirtualHeight / scale/Zoom;
-        Position = position - new Vector2(x, y);
-        //System.Diagnostics.Debug.WriteLine(position.X + "  " + position.Y);
+
+        Position = position;
+        Position = new Vector2((float)Math.Round(Position.X, 0), (float)Math.Round(Position.Y, 0));
+    }
+
+    public void LookAt(Vector2 position, float rotation)
+    {
+        Position = position;// + new Vector2(640,640);
+        Rotation =  -rotation;
         Position = new Vector2((float)Math.Round(Position.X, 0), (float)Math.Round(Position.Y, 0));
     }
 
@@ -168,11 +172,13 @@ public class OrthographicCamera : Camera
     private Matrix GetVirtualViewMatrix(Vector2 parallaxFactor)
     {
         return
+            
             Matrix.CreateTranslation(new Vector3(-Position * parallaxFactor, 0.0f)) *
-            Matrix.CreateTranslation(new Vector3(-Origin, 0.0f)) *
             Matrix.CreateRotationZ(Rotation) *
             Matrix.CreateScale(Zoom, Zoom, 1) *
-            Matrix.CreateTranslation(new Vector3(Origin, 0.0f));
+            
+            
+            Matrix.CreateTranslation(new Vector3(Origin*Zoom, 0.0f));
     }
 
     private Matrix GetVirtualViewMatrix()

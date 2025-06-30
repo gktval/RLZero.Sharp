@@ -27,7 +27,7 @@ public class MLP :  Sequential<Tensor, Tensor>
             {
 
                 layers.Add(nn.Linear(sizes[i], sizes[i + 1], device: device));
-                //layers.Add(nn.BatchNorm1d(sizes[i + 1], device: device));
+                layers.Add(nn.BatchNorm1d(sizes[i + 1], device: device));
                 layers.Add(activation);
             }
             else
@@ -37,12 +37,15 @@ public class MLP :  Sequential<Tensor, Tensor>
             }
         }
 
-        //if (initZero)
-        //{
-        //    var lastLayer = (Linear)layers[layers.Count - 2];
-        //    lastLayer.weight.fill_(0);
-        //    lastLayer.bias.fill_(0);
-        //}
+        if (initZero)
+        {
+            var lastLayer = (Linear)layers[layers.Count - 2];
+            using (torch.no_grad())
+            {
+                lastLayer.weight.fill_(0);
+                lastLayer.bias.fill_(0);
+            }
+        }
 
         List<string> names = new List<string>();
         foreach (var layer in layers)

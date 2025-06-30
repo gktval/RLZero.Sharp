@@ -50,20 +50,22 @@ public class Main
             //temperature = 0;
             float score = 0;
 
-            if (totalGames % 10 == 0 && totalGames > 0)
+            if (totalGames % 20 == 0 && totalGames > 0)
             {
                 learningRate *= config.learning_rate_decay;
                 zeroNet.InitOptimizer(learningRate);
             }
 
+            int lastRewardFrame = 0;
             while (!isGameOver && frames < config.max_frames)
             {
 
-                var node = mcts.Search(config.n_simulations, frame);
+                var node = mcts.Search(config.n_simulations, frame, temperature != 0);
 
                 Act action = node.PickBestAction(temperature);
                 //int actKey = GetHumanAction();
                 //Act action = new Act(torch.tensor(actKey));
+                //action = new Act(torch.tensor(3));
 
                 env.Render = config.render;
 
@@ -76,7 +78,10 @@ public class Main
                 frames++;
                 score += step.Reward.Value;
 
-                if (score < -100)
+                if (step.Reward.Value > 0)
+                    lastRewardFrame = frames;
+
+                if (score < -100 || frames - lastRewardFrame >= 50)
                     isGameOver = true;
 
             }
@@ -87,14 +92,19 @@ public class Main
                 memory.Reanalyse(mcts);
             }
             memory.SaveGame(gameRecord);
+            GC.Collect();
 
-            var metricsDictionary = mcts.Train(memory, (config.n_batches));
+            var metricsDictionary = mcts.Train(memory, config.n_batches); // n_batches of 4 * batchsize of 32 = 128 batches
+
+
+            if (totalGames % 50 == 0)
+                mcts.SaveModel();
 
             //TODO: Log the score
 
             scores.Add(score);
             float last100 = scores.Skip(Math.Max(scores.Count - 100, 0)).Take(100).Average();
-            Console.WriteLine($"Completed game {totalGames + 1} with score {Math.Round(score, 2)}. Loss was {Math.Round(metricsDictionary["Loss/total"], 2)}. Rolling average is {Math.Round(last100, 1)}");
+            Console.WriteLine($"Completed game {totalGames + 1} with score {Math.Round(score, 2)} in {frames} frames. Loss was {Math.Round(metricsDictionary["Loss/total"], 2)}. Rolling average is {Math.Round(last100, 1)}");
             totalGames++;
         }
 
@@ -107,13 +117,13 @@ public class Main
         var key = Console.ReadKey().Key;
 
         if (key == ConsoleKey.LeftArrow)
-            return 1;
-        else if (key == ConsoleKey.RightArrow)
-            return 2;
-        else if (key == ConsoleKey.UpArrow)
-            return 3;
-        else if (key == ConsoleKey.DownArrow)
             return 4;
+        else if (key == ConsoleKey.RightArrow)
+            return 3;
+        else if (key == ConsoleKey.UpArrow)
+            return 1;
+        else if (key == ConsoleKey.DownArrow)
+            return 2;
 
         return 0;
     }

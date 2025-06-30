@@ -16,8 +16,8 @@ public class PolicyPredictionNet : nn.Module
 
     private ModuleList<Conv2d> _conv1x1_values;
     private Conv2d _conv1x1_policy;
-    private ModuleList<BatchNorm> _bn_values;
-    private BatchNorm _bn_policy;
+    private ModuleList<BatchNorm2d> _bn_values;
+    private BatchNorm2d _bn_policy;
 
     private ModuleList<ResidualBlock> _resBlocks;
     private ModuleList<MLP> _fc_values;
@@ -44,10 +44,10 @@ public class PolicyPredictionNet : nn.Module
         _conv1x1_values = nn.ModuleList<Conv2d>(valueConvs.ToArray());
         _conv1x1_policy = nn.Conv2d(numChannels, reducedChannels, 1, device: device);
 
-        List<BatchNorm> valueBns = new List<BatchNorm>();
+        List<BatchNorm2d> valueBns = new List<BatchNorm2d>();
         for (int v = 0; v < v_num; v++)
             valueBns.Add(nn.BatchNorm2d(reducedChannels, device: device));
-        _bn_values = nn.ModuleList<BatchNorm>(valueBns.ToArray());
+        _bn_values = nn.ModuleList<BatchNorm2d>(valueBns.ToArray());
         _bn_policy = nn.BatchNorm2d(reducedChannels, device: device);
 
         List<MLP> valueMLPs = new List<MLP>();
@@ -70,17 +70,19 @@ public class PolicyPredictionNet : nn.Module
         for (int v = 0; v < _v_num; v++)
         {
             var val = _conv1x1_values[v].forward(x);
-            //val = _bn_values[v].forward(val);
+            val = _bn_values[v].forward(val);
             val = F.relu(val);
             val = val.reshape(-1, _flattenSize);
+            //var xsV = val.data<float>().ToArray();
             val = _fc_values[v].forward(val);
             values.Add(val);
         }  
         
         var policy = _conv1x1_policy.forward(x);
-        //policy = _bn_policy.forward(policy);
+        policy = _bn_policy.forward(policy);
         policy = F.relu(policy);
         policy = policy.reshape(-1, _flattenSize);
+        //var xsP = policy.data<float>().ToArray();
         policy = _fc_policy.forward(policy);
 
         if(_isContinuous)

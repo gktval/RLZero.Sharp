@@ -1,26 +1,24 @@
 ﻿# Basic params
-seed: 0
+seed: 42
 
 # Setup params  
 log_dir: "runs"
 log_name: "None"
 load_buffer: False
 debug: False
-train_speed_profiling: False
-get_batch_profiling: False
 render: False
 print_simple: True
-max_games: 125 # Total number of games before training is ended
-max_total_frames: 10000
+max_games: 5000 # Total number of games before training is ended
 max_frames: 800 # Maximum frames for a single game before it is cut short
 obs_shape: [3, 96, 96]
 image: true
+frame_skip: 3
 
 # Model params
 latent_size: 32
 fc_units: 32
 support_width: 25
-n_simulations: 41
+n_simulations: 50
 downsample: True
 init_zero: True    # prev True
 num_blocks: 1   # prev 1
@@ -38,21 +36,20 @@ prjection_head_layers: [256, 1024]  # hidden dim, output dim
 
 
 # Training params
-learning_rate: 0.001
+learning_rate: 0.1
 learning_rate_decay: 0.9
 weight_decay: 0.0001
 grad_clip: 1 # 0 interpreted as no clipping
-val_weight: 0.25
 batch_size: 32
 
 # Search params
-root_dirichlet_alpha: 0.25
+root_dirichlet_alpha: 0.3
 explore_frac: 0.25
 discount: 0.997
-n_batches: 100
+n_batches: 4
 rollout_depth: 5
 reward_depth: 25
-buffer_size: 200
+buffer_size: 50
 
 # Priority replay params
 priority_replay: True
@@ -81,6 +78,7 @@ tau: 0.3
 reward_steps: 1000
 total_training_steps: 100000
 
-# Consistency loss
+# loss params
 consistency_loss: True
-consistency_weight: 0.5
+consistency_weight: 2
+value_weight: 0.25

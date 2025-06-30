@@ -42,7 +42,7 @@ public class GameCamera : OrthographicCamera
 
         MaximumZoom = 5f;
         MinimumZoom = 0.01f;
-        Origin = Vector2.Zero;
+        Origin = new Vector2(640,640);
 
         _mapSize.X = mapWidth;
         _mapSize.Y = mapHeight;
@@ -62,7 +62,7 @@ public class GameCamera : OrthographicCamera
         }
     }
 
-    public void Update(GameTime gameTime, Vector2 position)
+    public void Update(GameTime gameTime, float rotation, Vector2 position)
     {
 
         if (_shaking)
@@ -80,6 +80,7 @@ public class GameCamera : OrthographicCamera
             }
         }
 
+
         Vector2 lookAt = position * _tileSize;
         lookAt += new Vector2(_tileSize / 2, _tileSize / 2);
         if (_clampToMap)
@@ -90,7 +91,8 @@ public class GameCamera : OrthographicCamera
             //lookAt = MapClampedPosition(lookAt);
         }
 
-        LookAt(lookAt);
+
+        LookAt(lookAt, rotation + (float)Math.PI/2f);
 
         //if (_targetingZoom)
         //{

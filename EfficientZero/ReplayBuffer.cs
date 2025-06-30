@@ -40,7 +40,6 @@ public class ReplayBuffer
         _rewardDepth = config.reward_depth;
         _rolloutDepth = config.rollout_depth;
         _priorities = new List<float>();
-        _batchPriorities = new List<float>();
     }
 
     public void UpdateStats()
@@ -69,8 +68,6 @@ public class ReplayBuffer
         }
 
         _buffer.Add(game);
-        var prioritySum = game.Priorities.Sum();
-        _batchPriorities.Add(prioritySum);
 
         UpdateStats();
         _gameCount += 1;

@@ -1,0 +1,99 @@
+
+#----------------------------- Global Properties ----------------------------#
+
+/outputDir:bin/$(Platform)
+/intermediateDir:obj/$(Platform)
+/platform:Windows
+/config:
+/profile:Reach
+/compress:False
+
+#-------------------------------- References --------------------------------#
+
+
+#---------------------------------- Content ---------------------------------#
+
+#begin AsteroidsPlayerExplosion.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:AsteroidsPlayerExplosion.wav
+
+#begin AsteroidsRockExplosion.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:AsteroidsRockExplosion.wav
+
+#begin AsteroidsUFOExplosion.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:AsteroidsUFOExplosion.wav
+
+#begin AsteroidsUFOLarge.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:AsteroidsUFOLarge.wav
+
+#begin AsteroidsUFOShot.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:AsteroidsUFOShot.wav
+
+#begin AsteroidsUFOSmall.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:AsteroidsUFOSmall.wav
+
+#begin AsteroidsDeluxePlayerStart.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:AsteroidsDeluxePlayerStart.wav
+
+#begin AsteroidsDeluxePodExplosion.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:AsteroidsDeluxePodExplosion.wav
+
+#begin AsteroidsDeluxePodSpawn.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:AsteroidsDeluxePodSpawn.wav
+
+#begin AsteroidsDeluxeShield.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:AsteroidsDeluxeShield.wav
+
+#begin AsteroidsDeluxeBackground.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:AsteroidsDeluxeBackground.wav
+
+#begin AsteroidsDeluxeBonusShip.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:AsteroidsDeluxeBonusShip.wav
+
+#begin AsteroidsDeluxePlayerFire.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:AsteroidsDeluxePlayerFire.wav
+
+#begin AsteroidsDeluxePlayerThrust.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:AsteroidsDeluxePlayerThrust.wav
+
